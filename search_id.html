@@ -1,0 +1,241 @@
+<!doctype html>
+ <html > 
+  <meta charset="utf-8" />
+  <!--[if IE]>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <![endif]-->
+  <title>HLPID</title>
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <meta name="viewport" content="width=device-width" />
+  <link href="img/log_title.jpg" rel="SHORTCUT ICON">
+  
+  <link rel="stylesheet" href="css/bootstrap.css" />
+  <link rel="stylesheet" href="dist/bootstrap-table.css" />
+  <link rel="stylesheet" href="css/jquery-confirm.min.css" type="text/css" media="all">
+  <link rel="stylesheet" href="style.css" />
+  
+  <script src="includes/js/libs/jquery-3.1.1.js"></script>
+  <script type="text/javascript" src="dist/jquery-confirm.min.js"></script>
+  <script src="includes/js/jquery.validate.js" type="text/javascript"></script>
+  
+  
+  <script src="includes/js/libs/bootstrap/bootstrap.js"></script>
+  <script src="dist/bootstrap-table.js"></script>
+  
+  
+   <link rel="stylesheet" href="style.css" />
+   
+   
+   
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
+<body>
+   <div id="header"></div>
+   
+   <!-- #nav -->
+   <!-- To prevent the content from "disappearing" under the nav when it is viewed at the top -->
+   <div class="clear after_nav"></div>
+   <!-- Start Content -->
+   <div class="container margin-top mobile-no-margin-top">
+      <div class="row">
+      <div class="col-md-12">
+   
+		<div id="custom-toolbar" style="margin-bottom:-40px;margin-top:1px;">
+		    <div class="form-inline" role="form">
+		        <div class="form-group">
+		            <div class="input-group">
+		                <div class="input-group-addon  alert-success">ID Search</div>
+		                
+		       
+		                <input  id="search_id_input" class="form-control alert-success" style="height:auto;"  value="ENST00000414"  placeholder="ENST00000414" type="email">
+		                <div class="input-group-addon  alert-success">Type</div>
+		                <div class="input-group-addon  alert-success" style="padding: 0px 12px;">
+			                <select id="type" class="form-control input-sm">
+			                	
+			                	<option value="enst">LncRNA ID (Ensembl)</option>
+			                	<option value="ensg">LncRNA Gene (Ensembl)</option>
+			                	<option value="symbol">LncRNA Gene (Symbol)</option>
+			                	
+			                	
+			                	
+			                	<!-- <option value="swisssprot">swisssprot</option> -->
+			                	<!-- <option value="trembl">trembl</option> -->
+			                	
+			                	
+			                </select>
+		                </div>
+		                
+		            </div>
+		            
+		            <button onclick=submitDownload() type="submit" class="btn btn-primary btn-group-lg">GO</button>
+		            
+		            
+		        </div>
+		        
+		        
+		    </div>
+		</div>
+		<table id="search_id"></table>
+</div>
+	
+          
+           
+           
+         </div>
+        
+      </div>
+      
+   <br/>
+    <br/>
+     <br/>
+     <br/>
+  <div class="clearfix"></div>
+   <div class="clearfix"></div>
+   <div id="footer"></div>
+  
+  
+   
+<script type="text/javascript">
+
+var search_id="ENST00000414";
+//var type="none";
+
+
+var str=location.href.split('=');
+if(str.length>1)
+{
+	search_id=str[1];
+	search_id=search_id.replace(/%20/g," ");
+	search_id=search_id.replace(/%27/g,"'");
+	//alert(search_id);
+}
+
+
+
+function show_table(e)
+{
+	var data_tissue=e.getAttribute("data_tissue");
+	//alert(data_tissue);
+	var dialog=$.dialog({
+		title: data_tissue,
+		content:function () 
+		{
+	        var self = this;
+	        return $.ajax({
+	            url: 'handle/search_seq_by_id.php?id='+data_tissue,
+	            dataType: 'json',
+	            method: 'get'
+	        }).done(function (response) {
+	            self.setContent("<div style='word-wrap:break-word;'>" + response.seq+"</div>");
+	            
+	           // self.setTitle(response.gene_symbol);
+	        }).fail(function(){
+	            self.setContent('Something went wrong.');
+	        });
+	    },
+		columnClass:'col-md-12',
+		icon: 'fa fa-spinner fa-spin',
+		
+	});
+}
+
+
+
+
+
+
+
+function submitDownload()
+{	
+	search_id=$("#search_id_input").val();
+	//type=$("#type").val();
+
+	
+	
+	if(search_id=="")
+		{
+		alert("please input ID")
+		}
+	else
+		{
+	$('#search_id').bootstrapTable("refresh",{query: {'search_id': search_id}} );
+	
+		}
+}
+	
+	
+
+
+
+$(function()
+{
+
+	$("#header").load("pages/header.html");
+	$("#footer").load("pages/footer.html");
+	
+$("#search_id").attr("placeholder",search_id);
+
+  $('#search_id').bootstrapTable(
+    {
+	url: 'handle/search_id.php',
+	method: 'get',
+	striped: true,
+	pagination: true,
+    pageSize: 10,
+    showColumns: true,
+    showRefresh: true,
+    pageList: [5,10, 25, 50, 100, 200],
+    dataType:'json',
+    //search:true,
+    showExport:true,
+    formatNoMatches: function()
+    {
+    	return 'No corresponding peptide result has been retrieved for your query of '+ search_id ;
+    },
+    queryParams:function() {
+	    return {
+	    	search_id:search_id,
+	        //type: type,
+	        sort: 'updated',
+	        direction: 'desc',
+	        per_page: 100,
+	        page: 1
+	    };
+	},
+    //sidePagination: 'server',
+    queryParamsType:'limit',
+    showColumns:true,
+    showToggle:true,
+    showPaginationSwitch:true,
+    
+    ///clickToSelect:true,
+    singleSelect:true,
+	  columns: [
+            {field: '',			title: '',align:"center",checkbox:true},
+            {field: 'lncrna_id',	title: 'LncRNA ID (Ensembl)',align:"center"},
+            {field: 'gene_id',	title: 'LncRNA Gene (Ensembl)',align:"center"},
+            {field: 'gene_symbol',	title: 'LncRNA Gene (Symbol)',align:"center"},
+            {field: 'chr',	title: 'Chr',align:"center",sortable:true},
+            {field: 'strand',	title: 'Strand',align:"center",sortable:true},
+            {field: 'start',	title: 'Start',align:"center",sortable:true},
+            {field: 'end',	title: 'End',align:"center",sortable:true},
+	        {field: 'seq',	title: 'Sequence',align:"center"},
+	        {field: 'lnc_protein',	title: "<div style='line-height:10px;padding: 0px;'>LncRNA-Protein<br/>Interaction</div>",align:"center"},
+	        ]
+	}); 
+})
+
+
+
+
+
+
+
+</script>
+   
+   
+   
+
+
+</body>
+</html>
